@@ -16,6 +16,7 @@ const UiTable = ({ operators, onOpen, setSelectedOperatorId }) => {
           <Tr>
             <Th>ID</Th>
             <Th>Nick Name</Th>
+            <Th>Operator Behaviour</Th>
             <Th isNumeric>Computational Power</Th>
             <Th isNumeric>Total Minors</Th>
           </Tr>
@@ -33,6 +34,7 @@ const UiTable = ({ operators, onOpen, setSelectedOperatorId }) => {
             >
               <Td>#{operator?.id}</Td>
               <Td>{operator?.nickName}</Td>
+              <Td>{operator?.operatorBehavior}</Td>
               <Td isNumeric>
                 {operator?.minors.reduce(
                   (accumulator, currentValue) =>

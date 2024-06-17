@@ -3,6 +3,7 @@ import {
   Box,
   Text,
   Input,
+  Select,
   Button,
   Flex,
   Heading,
@@ -18,8 +19,9 @@ import UiTable from "./../components/UiTable";
 import { useDispatch, useSelector } from "react-redux";
 import { addOperator, simulate } from "../feature/operators/operatorsSlice";
 import MinorView from "./MinorView";
+import { OperatorBehaviourEnum } from "../enum";
 
-const Operator = ({ operatorId, operatorName, handleChange }) => (
+const Operator = ({ operatorId, operatorName, handleChange,handleBehaviorChange,operatorBehavior }) => (
   <Box padding={"1rem"} border={"solid"} marginRight={"1rem"} rounded={"1rem"}>
     <Text mb="16px">ID: {`#${operatorId}`}</Text>
     <Input
@@ -28,14 +30,25 @@ const Operator = ({ operatorId, operatorName, handleChange }) => (
       placeholder="Nick name"
       size="sm"
     />
+    <Select  onChange={handleBehaviorChange} placeholder="Operator Behaviour" size="sm" mt={"1rem"} value={operatorBehavior} >
+    <option value={OperatorBehaviourEnum.HONEST}>{OperatorBehaviourEnum.HONEST}</option>
+    <option value={OperatorBehaviourEnum.SELFISH}>{OperatorBehaviourEnum.SELFISH}</option>
+    <option value={OperatorBehaviourEnum.UNPREDICTABLE}>{OperatorBehaviourEnum.UNPREDICTABLE}</option>
+    </Select>
   </Box>
 );
 
-const CreateButton = ({ dispatch, operatorName, id, setOperatorName }) => (
+const CreateButton = ({ dispatch, operatorName, id, setOperatorName ,operatorBehavior,
+  setOperatorBehavior,amount}) => (
   <Button
     onClick={() => {
-      dispatch(addOperator({ id, nickName: operatorName }));
+      if(operatorBehavior==="" || operatorName===""){
+        window.alert("Please fill required field");
+        return
+      }
+      dispatch(addOperator({ id, nickName: operatorName, operatorBehavior,amount}));
       setOperatorName("");
+      setOperatorBehavior("")
     }}
   >
     {"Create Operator"}
@@ -57,6 +70,8 @@ const SimulateButton = ({ dispatch }) => (
 
 const OperatorView = () => {
   const [operatorName, setOperatorName] = useState("");
+  const [operatorBehavior, setOperatorBehavior] = useState("");
+  const [amount, setAmount] = useState(0);
   const [selectedOperatorId, setSelectedOperatorId] = useState();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -65,6 +80,9 @@ const OperatorView = () => {
 
   const handleChange = (e) => {
     setOperatorName(e.target.value);
+  };
+  const handleBehaviorChange = (e) => {
+    setOperatorBehavior(e.target.value);
   };
 
   return (
@@ -92,12 +110,18 @@ const OperatorView = () => {
             operatorName={operatorName}
             handleChange={handleChange}
             operatorId={operatorsState.operatorCount}
+            operatorBehavior={operatorBehavior}
+            handleBehaviorChange={handleBehaviorChange}
+            amount={amount} 
+            setAmount={setAmount}
           />
           <CreateButton
             dispatch={dispatch}
             operatorName={operatorName}
             id={operatorsState.operatorCount}
             setOperatorName={setOperatorName}
+            operatorBehavior={operatorBehavior}
+            setOperatorBehavior={setOperatorBehavior}
           />
         </Flex>
         <UiTable
@@ -111,7 +135,7 @@ const OperatorView = () => {
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
-          <DrawerHeader>{`drawer contents`}</DrawerHeader>
+          <DrawerHeader>{`Add miner`}</DrawerHeader>
           <DrawerBody>
             <MinorView selectedOperatorId={selectedOperatorId} />
           </DrawerBody>
