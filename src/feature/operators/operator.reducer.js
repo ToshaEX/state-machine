@@ -2,6 +2,7 @@ import { OperatorBehaviourEnum } from "../../enum";
 
 const HONEST_VALUATION = 1;
 const SELFISH_VALUATION = 1.5;
+const TAX_REDUCTION = 0.9;
 
 const findAverage = (operator) => {
     let totalMiners = 0;
@@ -18,6 +19,7 @@ const findAverage = (operator) => {
   
     return {
       hashRateAvg: totalHashRate / totalMiners,
+      poolOperatorAvgHash:totalHashRate/operator.length,
       valuationPerHash: totalValuation / totalHashRate,
     };
   };
@@ -36,36 +38,59 @@ const addMinorReducer = (state, { payload }) => {
   
   const simulateReducer = async (state) => {
     state.prevOperators = [...state.operators];
-    const { hashRateAvg, valuationPerHash } = findAverage(state.operators);
-  
-    console.log(hashRateAvg, valuationPerHash);
+    const { hashRateAvg, valuationPerHash ,poolOperatorAvgHash} = findAverage(state.operators);
+    // const operators =[...state.operators];
+    // operators.map((operator)=>({
+    //   ...operator,operatorResourceTax: (( operator.totalComputationalPower-poolOperatorAvgHash)/100)*TAX_REDUCTION
+    // }))
+    state={...state,hashRateAvg, valuationPerHash ,poolOperatorAvgHash}
+
   };
 
   const addOperatorReducer= (state, { payload }) => {
     payload.totalComputationalPower = 0;
     payload.minorsTotal = 0;
     payload.minors = [];
-    
-    console.log("payload.amount"),payload.amount;
+
+
     for(let i=0;i<payload.amount;i++){
-      console.log("loop");
       const minorData={
+        id:state.minorsTotal,
         nickName:`Miner-${state.minorsTotal}`,
         hashRate:0,
         valuation:0
       };
-      
       if(OperatorBehaviourEnum.HONEST===payload.operatorBehavior){
-        const hashRate = Math.random()*1000;
+        
+        const hashRate = Math.floor(Math.random()*1000);
         minorData.hashRate=hashRate
         minorData.valuation=hashRate * HONEST_VALUATION
+
+      }else if(OperatorBehaviourEnum.UNPREDICTABLE===payload.operatorBehavior){
+        
+        const hashRate = Math.floor(Math.random()*1000);
+        minorData.hashRate=hashRate
+        const random =Math.random() < 0.5;
+        
+        if(random){
+          minorData.valuation=hashRate * (HONEST_VALUATION)
+        }else{
+          minorData.valuation=hashRate * (SELFISH_VALUATION)
+        }
+      }else{
+        const hashRate = Math.floor(Math.random()*1000);
+        minorData.hashRate=hashRate
+        minorData.valuation=hashRate * SELFISH_VALUATION
+
       }
-      
+      payload.totalComputationalPower=payload.totalComputationalPower+ minorData.hashRate
+      state.minorsTotal=payload.minorsTotal+1
+      payload.minorsTotal=payload.minorsTotal+1
       payload.minors.push(minorData);
-      state.minorsTotal = state.minorsTotal + 1;
     }
-    console.log(payload );  
+    
     state.operatorCount = state.operatorCount + 1;
+    state.totalpotionRate = state.totalpotionRate + parseFloat(payload.potionRate);
     state.operators = [...state.operators, { ...payload }];
 
   }

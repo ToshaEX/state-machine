@@ -1,9 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { addOperatorReducer,addMinorReducer,simulateReducer, minorCreationReducer} from "./operator.reducer"
+import { addOperatorReducer,addMinorReducer,simulateReducer} from "./operator.reducer"
 
 const initialState = {
   operatorCount: 0,
   operatorBehavior:null,
+  hashRateAvg:0,
+  valuationPerHash:0,
+  totalpotionRate:0,
+  poolOperatorAvgHash:0,
   minorsTotal: 0,
   operators: [],
   prevOperators: [],
@@ -16,7 +20,6 @@ export const operatorsSlice = createSlice({
   addOperator:addOperatorReducer,
     addMinor: addMinorReducer,
     simulate: simulateReducer,
-    // minerCreation:minorCreationReducer,
   },
 });
 

@@ -20,14 +20,29 @@ import { useDispatch, useSelector } from "react-redux";
 import { addOperator, simulate } from "../feature/operators/operatorsSlice";
 import MinorView from "./MinorView";
 import { OperatorBehaviourEnum } from "../enum";
+import SimulateResultView from "./SimulateResultView";
 
-const Operator = ({ operatorId, operatorName, handleChange,handleBehaviorChange,operatorBehavior }) => (
+const Operator = ({ operatorId, operatorName, handleChange,handleBehaviorChange,operatorBehavior,amount ,handleAmountChange,potionRate,handlePotionRateChange}) => (
   <Box padding={"1rem"} border={"solid"} marginRight={"1rem"} rounded={"1rem"}>
     <Text mb="16px">ID: {`#${operatorId}`}</Text>
     <Input
       value={operatorName}
       onChange={handleChange}
       placeholder="Nick name"
+      size="sm"
+    />
+    <Input
+      value={amount}
+      mt={"1rem"}
+      onChange={handleAmountChange}
+      placeholder="Miner count"
+      size="sm"
+    />
+    <Input
+      value={potionRate}
+      mt={"1rem"}
+      onChange={handlePotionRateChange}
+      placeholder="Potion rate"
       size="sm"
     />
     <Select  onChange={handleBehaviorChange} placeholder="Operator Behaviour" size="sm" mt={"1rem"} value={operatorBehavior} >
@@ -39,28 +54,31 @@ const Operator = ({ operatorId, operatorName, handleChange,handleBehaviorChange,
 );
 
 const CreateButton = ({ dispatch, operatorName, id, setOperatorName ,operatorBehavior,
-  setOperatorBehavior,amount}) => (
+  setOperatorBehavior,amount,setAmount,potionRate, setPotionRate}) => (
   <Button
     onClick={() => {
-      if(operatorBehavior==="" || operatorName===""){
+      if(operatorBehavior==="" || operatorName===""||amount<0||amount===null){
         window.alert("Please fill required field");
         return
       }
-      dispatch(addOperator({ id, nickName: operatorName, operatorBehavior,amount}));
+      dispatch(addOperator({ id, nickName: operatorName, operatorBehavior,amount, potionRate}));
       setOperatorName("");
-      setOperatorBehavior("")
+      setOperatorBehavior("");
+      setAmount();
+      setPotionRate();
     }}
   >
     {"Create Operator"}
   </Button>
 );
 
-const SimulateButton = ({ dispatch }) => (
+const SimulateButton = ({ dispatch,onSimOpen }) => (
   <Button
     variant={"outline"}
     colorScheme={"teal"}
     margin={"1rem"}
     onClick={() => {
+      onSimOpen();
       dispatch(simulate());
     }}
   >
@@ -71,9 +89,11 @@ const SimulateButton = ({ dispatch }) => (
 const OperatorView = () => {
   const [operatorName, setOperatorName] = useState("");
   const [operatorBehavior, setOperatorBehavior] = useState("");
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState();
+  const [potionRate, setPotionRate] = useState();
   const [selectedOperatorId, setSelectedOperatorId] = useState();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen:isSimOpen, onOpen: onSimOpen, onClose:onSimClose } = useDisclosure();
 
   const dispatch = useDispatch();
   const operatorsState = useSelector((state) => state.operator);
@@ -83,6 +103,12 @@ const OperatorView = () => {
   };
   const handleBehaviorChange = (e) => {
     setOperatorBehavior(e.target.value);
+  };
+  const handleAmountChange = (e) => {
+    setAmount(e.target.value);
+  };
+  const handlePotionRateChange = (e) => {
+    setPotionRate(e.target.value);
   };
 
   return (
@@ -113,7 +139,9 @@ const OperatorView = () => {
             operatorBehavior={operatorBehavior}
             handleBehaviorChange={handleBehaviorChange}
             amount={amount} 
-            setAmount={setAmount}
+            handleAmountChange={handleAmountChange}
+            potionRate={potionRate}
+            handlePotionRateChange={handlePotionRateChange}
           />
           <CreateButton
             dispatch={dispatch}
@@ -122,6 +150,10 @@ const OperatorView = () => {
             setOperatorName={setOperatorName}
             operatorBehavior={operatorBehavior}
             setOperatorBehavior={setOperatorBehavior}
+            amount={amount} 
+            handleAmountChange={handleAmountChange}
+            potionRate={potionRate}
+            setPotionRate={setPotionRate}
           />
         </Flex>
         <UiTable
@@ -129,7 +161,7 @@ const OperatorView = () => {
           onOpen={onOpen}
           setSelectedOperatorId={setSelectedOperatorId}
         />
-        <SimulateButton dispatch={dispatch} />
+        <SimulateButton dispatch={dispatch} onSimOpen={onSimOpen} />
       </Flex>
       <Drawer onClose={onClose} isOpen={isOpen} size={"xl"}>
         <DrawerOverlay />
@@ -138,6 +170,16 @@ const OperatorView = () => {
           <DrawerHeader>{`Add miner`}</DrawerHeader>
           <DrawerBody>
             <MinorView selectedOperatorId={selectedOperatorId} />
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+      <Drawer onClose={onSimClose} isOpen={isSimOpen} size={"xl"}>
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerCloseButton />
+          <DrawerHeader>{`Simulate Results`}</DrawerHeader>
+          <DrawerBody>
+            <SimulateResultView operators={operatorsState.operators} />
           </DrawerBody>
         </DrawerContent>
       </Drawer>
